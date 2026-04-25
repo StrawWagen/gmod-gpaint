@@ -615,6 +615,14 @@ local blockBinds = {
     ["+reload"] = true
 }
 
+local exceptionWeapons = {
+    ["gmod_camera"] = true -- They're trying to take a photo of the screen, let them!
+}
+
 hook.Add( "PlayerBindPress", "GPaint.BlockBindsWhenFocused", function( _, bind )
-    if blockBinds[bind] and focusedId then return true end
+    if blockBinds[bind] and focusedId then -- Blockable bind, and we're focusing on a screen
+        local weapon = LocalPlayer():GetActiveWeapon()
+        if not IsValid( weapon ) then return true end
+        if not exceptionWeapons[weapon:GetClass()] then return true end
+    end
 end )
