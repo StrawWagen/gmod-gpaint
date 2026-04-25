@@ -4,6 +4,10 @@ local RT_SIZE = GPaint.RT_SIZE
 
 local Floor = math.floor
 
+local cannotDrawWeapons = {
+    ["gmod_camera"] = true -- They're trying to take a photo of the screen, let them!
+}
+
 -- Get a position on the render target relative to a position on the screen
 local function ScreenToRT( x, y )
     return
@@ -196,6 +200,12 @@ function Screen:OnCursor( x, y )
 
     local cursorLeft = input.IsMouseDown( MOUSE_LEFT )
     local cursorRight = input.IsMouseDown( MOUSE_RIGHT )
+
+    local activeWeapon = LocalPlayer():GetActiveWeapon()
+    if IsValid( activeWeapon ) and cannotDrawWeapons[activeWeapon:GetClass()] then
+        cursorLeft = false
+        cursorRight = false
+    end
 
     self.eraserMode = input.IsKeyDown( KEY_LALT )
 
@@ -615,14 +625,10 @@ local blockBinds = {
     ["+reload"] = true
 }
 
-local exceptionWeapons = {
-    ["gmod_camera"] = true -- They're trying to take a photo of the screen, let them!
-}
-
 hook.Add( "PlayerBindPress", "GPaint.BlockBindsWhenFocused", function( _, bind )
     if blockBinds[bind] and focusedId then -- Blockable bind, and we're focusing on a screen
         local weapon = LocalPlayer():GetActiveWeapon()
         if not IsValid( weapon ) then return true end
-        if not exceptionWeapons[weapon:GetClass()] then return true end
+        if not cannotDrawWeapons[weapon:GetClass()] then return true end
     end
 end )
